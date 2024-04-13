@@ -1,5 +1,21 @@
 import math
 import numpy as np
 
-a = np.pi
-print(math.floor(a))
+def round_down(x,digits,base=10):
+    # round down number x to d digits.
+    x = np.array(x)
+    flr = np.vectorize(math.floor)
+    return flr(x*(base**digits))/base**digits
+
+
+def SR_single (x,digits,base=10):
+    R = 10**(-digits) # gap between two numbers
+    x_round = round_down(x,digits,base)
+    if np.random.uniform()*R < x-x_round:
+        x_round += R
+    return x_round
+
+def SR(A,digits,base=10):
+    A = np.array(A)
+    sr = np.vectorize(SR_single)
+    return sr(A,digits,base)
