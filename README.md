@@ -1,2 +1,2 @@
 # stochastic_rounding
- Simulation of stochastic rounding in Python
+ Toy simulation of stochastic rounding in Python
