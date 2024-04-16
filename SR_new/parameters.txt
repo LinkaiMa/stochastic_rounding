@@ -1,5 +1,5 @@
 n = 100
-steps = 2000
+steps = 200
 digits = 5
 avg = 10
-rate = 0.99
+rate = 0.5
