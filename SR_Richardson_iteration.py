@@ -27,12 +27,12 @@ x_vals_sr = np.zeros(shape=(n,steps))
 for i in tqdm(range(steps)):
     rn_error[i] = np.linalg.norm(x_rn-x_sol) 
     sr_error[i] = np.linalg.norm(x_sr-x_sol)
-    x_rn = RN(x_rn+b_rn-A_rn@x_rn,digits)
+    x_rn = RN(x_rn+RN(b_rn-A_rn@x_rn,digits),digits)
     x_vals_rn[:,i] = x_rn
     x_rn_avg = np.average(x_vals_rn[:,i-avg+1:i+1],axis=1)
     rn_error_avg[i] = np.linalg.norm(x_rn_avg-x_sol)
     A_sr = SR(A0,digits); b_sr = SR(b0,digits)
-    x_sr = SR(x_sr+b_sr-A_sr@x_sr,digits)
+    x_sr = SR(x_sr+SR(b_sr-A_sr@x_sr,digits),digits)
     x_vals_sr[:,i] = x_sr
     x_sr_avg = np.average(x_vals_sr[:,i-avg+1:i+1],axis=1)
     sr_error_avg[i] = np.linalg.norm(x_sr_avg-x_sol)
