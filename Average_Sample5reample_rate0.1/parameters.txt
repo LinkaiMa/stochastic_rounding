@@ -1,0 +1,6 @@
+n = 100
+steps = 200
+digits = 5
+avg = 10
+rate = 0.5
+resample percentage = 10.0number of initial samples = 20average_sample = 5

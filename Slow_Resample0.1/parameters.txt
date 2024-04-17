@@ -1,0 +1,6 @@
+n = 100
+steps = 2000
+digits = 5
+avg = 10
+rate = 0.99
+resample percentage = 10.0number of initial samples = 200

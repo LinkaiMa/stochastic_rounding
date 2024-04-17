@@ -2,7 +2,10 @@ from SR_tools import *
 from tqdm import tqdm
 from sklearn.datasets import make_sparse_spd_matrix
 import os
-n = 100; steps = 200; digits = 5; avg = 10; rate = 0.5; path = 'No_Resample'  # SR_no_avg
+n = 100; steps = 200; digits = 5; avg = 10; average_sample = 10
+rate = 0.5; resample_rate =0.1; resample = int(steps*resample_rate)
+path = 'Average_Sample'+str(average_sample) +'reample_rate'+str(resample_rate)  # SR_no_avg
+
 if not os.path.exists(path):
     os.makedirs(path)
 
@@ -10,17 +13,23 @@ if not os.path.exists(path):
 A = make_sparse_spd_matrix(n)
 A = A/np.linalg.norm(A,ord=2)*rate
 A += np.eye(n)
-A0 = A.copy()
 x_sol = np.ones(shape=n)
 b = np.sum(A,axis=1)
-b0 = b.copy()
+
+A_rn = RN(A,digits); b_rn = RN(b,digits)
+A_samples = np.zeros(shape=n*n*resample)
+b_samples = np.zeros(shape=n*resample)
+for i in tqdm(range(resample)):
+    A_sr = SR(A,digits)
+    b_sr = SR(b,digits)
+    A_samples[i*n**2:(i+1)*n**2]=A_sr.flatten()
+    b_samples[i*n:(i+1)*n]=b_sr
 
 rn_error = np.zeros(shape=steps)
 rn_error_avg = np.zeros(shape=steps)
 sr_error = np.zeros(shape=steps)
 sr_error_avg = np.zeros(shape=steps)
 x_rn = np.zeros(shape=n); x_sr = np.zeros(shape=n)
-A_rn = RN(A,digits); b_rn = RN(b,digits)
 x_vals_rn = np.zeros(shape=(n,steps))
 x_vals_sr = np.zeros(shape=(n,steps))
 
@@ -31,7 +40,12 @@ for i in tqdm(range(steps)):
     x_vals_rn[:,i] = x_rn
     x_rn_avg = np.average(x_vals_rn[:,i-avg+1:i+1],axis=1)
     rn_error_avg[i] = np.linalg.norm(x_rn_avg-x_sol)
-    A_sr = SR(A0,digits); b_sr = SR(b0,digits)
+    rand_seed = np.random.randint(resample,size=average_sample)
+    A_sr = np.zeros(shape=(n,n)); b_sr = np.zeros(shape=n)
+    for rand in rand_seed:
+        A_sr += A_samples[rand*n*n:(rand+1)*n*n].reshape(n,n)
+        b_sr += b_samples[rand*n:(rand+1)*n]
+    A_sr/=average_sample; b_sr/=average_sample
     x_sr = SR(x_sr+SR(b_sr-A_sr@x_sr,digits),digits)
     x_vals_sr[:,i] = x_sr
     x_sr_avg = np.average(x_vals_sr[:,i-avg+1:i+1],axis=1)
@@ -46,8 +60,8 @@ plt.ylabel('error')
 plt.title('Richardson convergence rate '+str(rate))
 plt.legend()
 plt.savefig(path+'/Richardson'+path+'.png')
+plt.show()
 plt.close()
-
 
 with open(path+'/parameters.txt', 'w') as file:
     file.write("n = "+str(n)+"\n")
@@ -55,7 +69,9 @@ with open(path+'/parameters.txt', 'w') as file:
     file.write("digits = "+str(digits)+"\n")
     file.write("avg = "+str(avg)+"\n")
     file.write("rate = "+str(rate)+"\n")
-
+    file.write("resample percentage = "+str(100*resample_rate))
+    file.write("number of initial samples = "+str(resample))
+    file.write("average_sample = "+str(average_sample))
 np.save(path+'/A.npy',A)
 np.save(path+'/x_vals_rn.npy',x_vals_rn)
 np.save(path+'/x_vals_sr.npy',x_vals_sr)
